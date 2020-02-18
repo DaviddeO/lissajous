@@ -75,9 +75,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.parent = parent
         self.lissajous = lis
         self.counter = 0
+        self.n = 1000
         self.timer = wx.Timer(self)
-        self.points = np.empty((1000,2))
-        self.colours = np.linspace((0,0,0), (1,1,1), num=1000)
+        self.points = np.empty((self.n,2))
+        self.colours = np.linspace((0,0,0), (1,1,1), num=self.n)
 
         # Set the context to the canvas
         self.init = False
@@ -91,10 +92,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         """Configure and initialise the 2D OpenGL context."""
 
         self.SetCurrent(self.context)
-        self.counter = 1000
+        self.counter = self.n
         size = self.GetClientSize()
 
-        for i in range (1000):
+        for i in range (self.n):
             self.lissajous.updatePattern(i)
             self.points[i] = [self.lissajous.x * size.width * 0.75,
                               self.lissajous.y * size.height * 0.75]
@@ -125,7 +126,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
         # Draw
-        GL.glDrawArrays(GL.GL_LINE_STRIP, 0, 1000)
+        GL.glDrawArrays(GL.GL_LINE_STRIP, 0, self.n)
 
         GL.glFlush()
         self.SwapBuffers()
