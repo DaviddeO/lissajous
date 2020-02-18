@@ -75,7 +75,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.parent = parent
         self.lissajous = lis
         self.counter = 0
-        self.dequePoints = deque(maxlen=1000)
+        self.points = np.empty((1000,2))
+        self.colours = np.linspace((0,0,0), (1,1,1), num=1000)
 
         # Set the context to the canvas
         self.init = False
@@ -88,15 +89,19 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def init_gl(self):
         """Configure and initialise the 2D OpenGL context."""
 
-        self.counter = 0
-        self.dequePoints.clear()
+        self.SetCurrent(self.context)
+        self.counter = 1000
         size = self.GetClientSize()
 
-        self.lissajous.updatePattern(self.counter)
-        self.dequePoints.append((self.lissajous.x * size.width * 0.75,
-                                 self.lissajous.y * size.height * 0.75))
+        for i in range (1000):
+            self.lissajous.updatePattern(i)
+            self.points[i] = [self.lissajous.x * size.width * 0.75,
+                              self.lissajous.y * size.height * 0.75]
 
-        self.SetCurrent(self.context)
+        GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
+        GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
+        GL.glEnableClientState(GL.GL_VERTEX_ARRAY)
+        GL.glEnableClientState(GL.GL_COLOR_ARRAY)
 
         GL.glClearColor(0.0, 0.0, 0.0, 0.0)
         GL.glViewport(0, 0, size.width, size.height)
@@ -115,17 +120,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init = True
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-        c = np.linspace(0, 1, len(self.dequePoints))
 
         # Draw
-        i = 0
-        GL.glBegin(GL.GL_LINE_STRIP)
-        for point in self.dequePoints:
-            ci = c[i]
-            GL.glColor3f(ci,ci,ci)
-            GL.glVertex2f(point[0], point[1])
-            i += 1
-        GL.glEnd()
+        GL.glDrawArrays(GL.GL_LINE_STRIP, 0, 1000)
 
         GL.glFlush()
         self.SwapBuffers()
@@ -143,13 +140,15 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def on_idle(self, event):
         """"""
 
-        self.counter += 0.5
+        self.SetCurrent(self.context)
+        self.counter += 1
         self.lissajous.updatePattern(self.counter)
 
         size = self.GetClientSize()
-        self.dequePoints.append((self.lissajous.x * size.width * 0.75,
-                                 self.lissajous.y * size.height * 0.75))
-
+        self.points = np.roll(self.points, -1)
+        self.points[999] = [self.lissajous.x * size.width * 0.75,
+                            self.lissajous.y * size.height * 0.75]
+        GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
         self.Refresh()
 
 
