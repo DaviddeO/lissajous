@@ -75,6 +75,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.parent = parent
         self.lissajous = lis
         self.counter = 0
+        self.timer = wx.Timer(self)
         self.points = np.empty((1000,2))
         self.colours = np.linspace((0,0,0), (1,1,1), num=1000)
 
@@ -84,7 +85,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         # Bind events to widgets
         self.Bind(wx.EVT_PAINT, self.on_paint)
-        self.Bind(wx.EVT_IDLE, self.on_idle)
+        self.Bind(wx.EVT_TIMER, self.on_timer)
 
     def init_gl(self):
         """Configure and initialise the 2D OpenGL context."""
@@ -109,6 +110,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glLoadIdentity()
         GL.glOrtho(-size.width, size.width, -size.height, size.height, 0, 1)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
+
+        self.timer.Start(40)
 
     def render(self):
         """Handle all drawing operations."""
@@ -137,7 +140,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init = True
         self.render()
 
-    def on_idle(self, event):
+    def on_timer(self, event):
         """"""
 
         self.SetCurrent(self.context)
@@ -145,9 +148,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.lissajous.updatePattern(self.counter)
 
         size = self.GetClientSize()
-        self.points = np.roll(self.points, -1)
-        self.points[999] = [self.lissajous.x * size.width * 0.75,
-                            self.lissajous.y * size.height * 0.75]
+        self.points = np.roll(self.points, (-1, -1))
+        self.points[-1] = [self.lissajous.x * size.width * 0.75,
+                           self.lissajous.y * size.height * 0.75]
         GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
         self.Refresh()
 
