@@ -1,10 +1,11 @@
 import wx
 import wx.glcanvas as wxcanvas
+import wx.lib.newevent as wxevt
 import numpy as np
 from OpenGL import GL, GLU
-from collections import deque
-from math import floor
 
+
+FrequencySliderEvent, EVT_FSLIDER = wxevt.NewEvent()
 
 class Lissajous():
     """Lissajous
@@ -31,14 +32,6 @@ class Lissajous():
         self.xScale = 2 * np.pi / self.width
         self.yScale = 2 * np.pi / self.height
         self.y = self.height / 2
-
-    def setXFreq(self, f):
-        """Set x frequency"""
-        self.xFreq = f
-
-    def setYFreq(self, f):
-        """Set y frequency"""
-        self.yFreq = f
 
     def updatePattern(self, dt):
         """"""
@@ -156,6 +149,41 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.Refresh()
 
 
+class FrequencySlider(wx.Panel):
+    """"""
+
+    def __init__(self, parent, initValue=1, initStyle=wx.SL_HORIZONTAL, initMin=1, initMax=30):
+        """"""
+
+        super().__init__(parent)
+        self.value = initValue
+
+        self.slider = wx.Slider(self, value=initValue, style=initStyle,
+                                minValue=initMin * 10, maxValue=initMax * 10)
+        self.spinCtrl = wx.SpinCtrlDouble(self, initial=initValue, min=initMin, max=initMax, inc=0.1)
+
+        self.box = wx.BoxSizer(wx.HORIZONTAL)
+        self.box.Add(self.slider, 1, wx.EXPAND)
+        self.box.Add(self.spinCtrl, 1, wx.EXPAND)
+
+        self.slider.Bind(wx.EVT_SLIDER, self.onSlider)
+        self.spinCtrl.Bind(wx.EVT_SPINCTRLDOUBLE, self.onSpin)
+
+    def onSlider(self, event):
+        """"""
+
+        self.value = self.slider.GetValue() / 10
+        self.spinCtrl.SetValue(self.value)
+        wx.PostEvent(self, FrequencySliderEvent())
+
+    def onSpin(self, event):
+        """"""
+
+        self.value = self.spinCtrl.GetValue()
+        self.slider.SetValue(int(self.value * 10))
+        wx.PostEvent(self, FrequencySliderEvent())
+
+
 class Control(wx.Panel):
     """"""
 
@@ -168,13 +196,8 @@ class Control(wx.Panel):
         self.canvas = glcan
         self._delta = np.linspace(0, 2 * np.pi, num=100)
 
-        self.xSlider = wx.Slider(self, value=self.lissajous.xFreq,
-                                 minValue=1, maxValue=20,
-                                 style=wx.SL_AUTOTICKS)
-
-        self.ySlider = wx.Slider(self, value=self.lissajous.yFreq,
-                                 minValue=1, maxValue=20,
-                                 style=wx.SL_VERTICAL|wx.SL_AUTOTICKS)
+        self.xSlider = FrequencySlider(self, initValue=self.lissajous.xFreq)
+        self.ySlider = FrequencySlider(self, initValue=self.lissajous.yFreq)
 
         self.deltaSlider = wx.Slider(self, minValue=1, maxValue=100)
         self.resetButton = wx.Button(self)
@@ -188,19 +211,19 @@ class Control(wx.Panel):
         self.box.Add(self.resetButton)
         self.SetSizer(self.box)
 
-        self.xSlider.Bind(wx.EVT_SLIDER, self.on_x_slider)
-        self.ySlider.Bind(wx.EVT_SLIDER, self.on_y_slider)
+        self.xSlider.Bind(EVT_FSLIDER, self.onXSlider)
+        self.ySlider.Bind(EVT_FSLIDER, self.onYSlider)
         self.deltaSlider.Bind(wx.EVT_SLIDER, self.on_delta_slider)
         self.resetButton.Bind(wx.EVT_BUTTON, self.on_button)
 
-    def on_x_slider(self, event):
+    def onXSlider(self, event):
         """"""
-        self.lissajous.xFreq = self.xSlider.GetValue()
+        self.lissajous.xFreq = self.xSlider.value
         self.canvas.init_gl()
 
-    def on_y_slider(self, event):
+    def onYSlider(self, event):
         """"""
-        self.lissajous.yFreq = self.ySlider.GetValue()
+        self.lissajous.yFreq = self.ySlider.value
         self.canvas.init_gl()
 
     def on_delta_slider(self, event):
