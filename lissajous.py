@@ -57,10 +57,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     on_paint(self, event): Handles the paint event.
     """
 
-    def __init__(self, parent, lis):
+    def __init__(self, parent, lis, initSize=(500, 500)):
         """Initialise canvas properties and useful variables."""
 
         super().__init__(parent, -1,
+                         size=initSize,
                          attribList=[wxcanvas.WX_GL_RGBA,
                                      wxcanvas.WX_GL_DOUBLEBUFFER,
                                      wxcanvas.WX_GL_DEPTH_SIZE, 16, 0])
@@ -163,10 +164,18 @@ class FrequencySlider(wx.Panel):
         self.spinCtrl = wx.SpinCtrlDouble(self, initial=initValue, min=initMin, max=initMax, inc=0.1)
         self.label = wx.StaticText(self, label=labelText)
 
-        self.box = wx.BoxSizer(wx.HORIZONTAL)
-        self.box.Add(self.slider, 1, wx.EXPAND)
-        self.box.Add(self.label, 1, wx.EXPAND)
-        self.box.Add(self.spinCtrl, 1, wx.EXPAND)
+        self.vbox = wx.BoxSizer(wx.VERTICAL)
+        self.vbox.Add(self.slider, 1, wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL)
+        self.vbox.AddSpacer(10)
+        self.spinCtrl.SetSize(self.slider.GetSize())
+        self.vbox.Add(self.spinCtrl, 1, wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL)
+
+        self.hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.hbox.AddSpacer(5)
+        self.hbox.Add(self.label, 1, wx.ALIGN_CENTRE_VERTICAL)
+        self.hbox.AddSpacer(20)
+        self.hbox.Add(self.vbox)
+        self.SetSizer(self.hbox)
 
         self.slider.Bind(wx.EVT_SLIDER, self.onSlider)
         self.spinCtrl.Bind(wx.EVT_SPINCTRLDOUBLE, self.onSpin)
@@ -198,19 +207,36 @@ class Control(wx.Panel):
         self.canvas = glcan
         self._delta = np.linspace(0, 2 * np.pi, num=100)
 
-        self.xSlider = FrequencySlider(self, "x- frequency", initValue=self.lissajous.xFreq)
-        self.ySlider = FrequencySlider(self, "y- frequency", initValue=self.lissajous.yFreq)
+        self.xSlider = FrequencySlider(self, "x frequency:", initValue=self.lissajous.xFreq)
+        self.ySlider = FrequencySlider(self, "y frequency:", initValue=self.lissajous.yFreq)
+        self.freqControlBox = wx.StaticBoxSizer(wx.VERTICAL, self, "Frequency Controls")
+        self.freqControlBox.AddSpacer(10)
+        self.freqControlBox.Add(self.xSlider)
+        self.freqControlBox.AddSpacer(30)
+        self.freqControlBox.Add(self.ySlider)
+        self.freqControlBox.AddSpacer(10)
 
         self.deltaSlider = wx.Slider(self, minValue=1, maxValue=100)
-        self.resetButton = wx.Button(self)
+        self.phaseControlBox = wx.StaticBoxSizer(wx.VERTICAL, self, "Phase shift control")
+        self.phaseControlBox.AddSpacer(10)
+        self.phaseControlBox.Add(self.deltaSlider)
+        self.phaseControlBox.AddSpacer(10)
 
+        self.resetButton = wx.Button(self)
         self.resetButton.SetLabel("Reset")
+        self.animationControlBox = wx.StaticBoxSizer(wx.VERTICAL, self, "Animation controls")
+        self.animationControlBox.AddSpacer(10)
+        self.animationControlBox.Add(self.resetButton)
+        self.animationControlBox.AddSpacer(10)
 
         self.box = wx.BoxSizer(wx.VERTICAL)
-        self.box.Add(self.xSlider, 1, wx.EXPAND)
-        self.box.Add(self.ySlider, 1, wx.EXPAND)
-        self.box.Add(self.deltaSlider, 1, wx.EXPAND)
-        self.box.Add(self.resetButton)
+        self.box.AddStretchSpacer(2)
+        self.box.Add(self.freqControlBox, 0, wx.EXPAND)
+        self.box.AddStretchSpacer(1)
+        self.box.Add(self.phaseControlBox, 0, wx.EXPAND)
+        self.box.AddStretchSpacer(1)
+        self.box.Add(self.animationControlBox, 0, wx.EXPAND)
+        self.box.AddStretchSpacer(2)
         self.SetSizer(self.box)
 
         self.xSlider.Bind(EVT_FSLIDER, self.onXSlider)
@@ -261,9 +287,9 @@ class Gui(wx.Frame):
 
         # Define layout
         box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(self.canvas, 1, wx.EXPAND)
-        box.Add(self.control)
-        self.SetSizer(box)
+        box.Add(self.canvas, 0)
+        box.Add(self.control, 0, wx.EXPAND)
+        self.SetSizerAndFit(box)
 
 
 def main():
