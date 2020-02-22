@@ -84,6 +84,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     numPoints: Number of points to draw on the Glcanvas
     timer: The timer used to update the animation of the Lissajous curve
     timerStep: Specifies how often to update the animation; in milliseconds
+    scale: Scaling factor for rendering points
     cycles: Number of cycles for which to draw the Lissajous curve when
             not animating
     points: Numpy array holding the coordinates for all the points of the
@@ -127,6 +128,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.numPoints = 0
         self.timer = wx.Timer(self)
         self.timerStep = 10
+        self.scale = 0.75
 
         self.cycles = 10
         self.numPointsFrozen = 1000 * self.cycles + 1
@@ -176,8 +178,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         count = 0
         for i in np.linspace(0, 2 * self.cycles * np.pi, self.numPointsFrozen):
             self.lissajous.updatePattern(i)
-            self.points[count] = [self.lissajous.x * size.width * 0.75,
-                                  self.lissajous.y * size.height * 0.75]
+            self.points[count] = [self.lissajous.x * size.width * self.scale,
+                                  self.lissajous.y * size.height * self.scale]
             count += 1
 
         GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
@@ -196,8 +198,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.currentTimestep = self.animationTimestep
 
         self.lissajous.updatePattern(self.currentTimestep)
-        self.points[0] = [self.lissajous.x * size.width * 0.75,
-                          self.lissajous.y * size.height * 0.75]
+        self.points[0] = [self.lissajous.x * size.width * self.scale,
+                          self.lissajous.y * size.height * self.scale]
 
         GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
         GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
@@ -227,6 +229,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         """Start animation drawing from 0 to numPointsToAnimate points."""
         self.SetCurrent(self.context)
         size = self.GetClientSize()
+        wScale = size.width * self.scale
+        hScale = size.height * self.scale
         numStepsSoFar = len(self.points)
 
         if numStepsSoFar < self.numPointsToAnimate:
@@ -235,8 +239,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
             self.lissajous.updatePattern(self.currentTimestep)
             self.points = np.append(self.points,
-                                    [[self.lissajous.x * size.width * 0.75,
-                                      self.lissajous.y * size.height * 0.75]],
+                                    [[self.lissajous.x * wScale,
+                                     self.lissajous.y * hScale]],
                                     0)
             self.colours = np.linspace((0, 0, 0), (1, 1, 1), numStepsSoFar)
 
@@ -270,8 +274,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.lissajous.updatePattern(self.currentTimestep)
 
         self.points = np.roll(self.points, (-1, -1))
-        self.points[-1] = [self.lissajous.x * size.width * 0.75,
-                           self.lissajous.y * size.height * 0.75]
+        self.points[-1] = [self.lissajous.x * size.width * self.scale,
+                           self.lissajous.y * size.height * self.scale]
         GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
 
         self.Refresh()
