@@ -205,11 +205,11 @@ class PhaseShiftSlider(wx.Panel):
         super().__init__(parent)
         self.slider = wx.Slider(self, value=0, minValue=0, maxValue=24, style=wx.SL_AUTOTICKS)
         self.value = 0
-        self.valueLabel = wx.StaticText(self, label="0")
-        self.labels = [str(i) + "\u03c0 / 12" for i in range(25)]
-        self.labels[0] = "0"
-        self.labels[12] = "\u03c0"
-        self.labels[24] = "2\u03c0"
+        self.valueLabel = wx.StaticText(self, label="0 rad")
+        self.labels = [str(i) + "\u03c0 / 12 rad" for i in range(25)]
+        self.labels[0] = "0 rad"
+        self.labels[12] = "\u03c0 rad"
+        self.labels[24] = "2\u03c0 rad"
 
         self.box = wx.BoxSizer(wx.HORIZONTAL)
         self.box.AddSpacer(5)
@@ -225,7 +225,7 @@ class PhaseShiftSlider(wx.Panel):
 
         v = self.slider.GetValue()
         self.value = np.pi * v / 12
-        self.valueLabel = self.labels[v]
+        self.valueLabel.SetLabel(self.labels[v])
         wx.PostEvent(self, PhaseShiftSliderEvent())
 
 
@@ -252,7 +252,7 @@ class Control(wx.Panel):
         self.deltaSlider = PhaseShiftSlider(self)
         self.phaseControlBox = wx.StaticBoxSizer(wx.VERTICAL, self, "Phase shift control")
         self.phaseControlBox.AddSpacer(10)
-        self.phaseControlBox.Add(self.deltaSlider)
+        self.phaseControlBox.Add(self.deltaSlider, 0, wx.EXPAND)
         self.phaseControlBox.AddSpacer(10)
 
         self.resetButton = wx.Button(self)
