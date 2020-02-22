@@ -2,7 +2,7 @@ import wx
 import wx.glcanvas as wxcanvas
 import wx.lib.newevent as wxevt
 import numpy as np
-from OpenGL import GL, GLU
+from OpenGL import GL
 
 
 FrequencySliderEvent, EVT_FSLIDER = wxevt.NewEvent()
