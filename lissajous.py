@@ -47,8 +47,8 @@ class Lissajous():
 
     Methods
     -------
-    updatePattern(dt): Perform an update for the x and y values of the Lissajous curve
-                       at the given value of dt
+    updatePattern(dt): Perform an update for the x and y values of the
+                       Lissajous curve at the given value of dt
     """
 
     def __init__(self, xFreq, yFreq, phaseShift):
