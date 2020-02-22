@@ -39,11 +39,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     Public methods
     --------------
-    init_gl(self): Configures the OpenGL context.
+    initGl(self): Configures the OpenGL context.
 
     render(self, text): Handles all drawing operations.
 
-    on_paint(self, event): Handles the paint event.
+    onPaint(self, event): Handles the paint event.
     """
 
     def __init__(self, parent, lis, initSize=(500, 500)):
@@ -77,9 +77,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.context = wxcanvas.GLContext(self)
 
         # Bind events to widgets
-        self.Bind(wx.EVT_PAINT, self.on_paint)
+        self.Bind(wx.EVT_PAINT, self.onPaint)
 
-    def init_gl(self):
+    def initGl(self):
         """Configure and initialise the 2D OpenGL context."""
 
         self.SetCurrent(self.context)
@@ -144,13 +144,13 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.timer.Start(self.timerStep)
         self.Bind(wx.EVT_TIMER, self.onInitialTimer)
 
-    def on_paint(self, event):
+    def onPaint(self, event):
         """Handle the paint event."""
 
         self.SetCurrent(self.context)
         if not self.init:
             # Configure the viewport, modelview and projection matrices
-            self.init_gl()
+            self.initGl()
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
