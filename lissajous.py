@@ -6,6 +6,7 @@ from OpenGL import GL, GLU
 
 
 FrequencySliderEvent, EVT_FSLIDER = wxevt.NewEvent()
+PhaseShiftSliderEvent, EVT_PSLIDER = wxevt.NewEvent()
 
 class Lissajous():
     """Lissajous
@@ -193,6 +194,36 @@ class FrequencySlider(wx.Panel):
         self.value = self.spinCtrl.GetValue()
         self.slider.SetValue(int(self.value * 10))
         wx.PostEvent(self, FrequencySliderEvent())
+
+
+class PhaseShiftSlider(wx.Panel):
+    """"""
+
+    def __init__(self, parent):
+        """"""
+
+        super().__init__(parent)
+        self.slider = wx.Slider(self, value=0, min=0, max=24 style=wx.SL_AUTOTICKS)
+        self.valueLabel = wx.StaticText(self, label="0")
+        self.labels = [str(i) + "\u03c0 / 12" for i in range(25)]
+        self.labels[0] = "0"
+        self.labels[12] = "\u03c0"
+        self.labels[24] = "2\u03c0"
+
+        self.box = wx.BoxSizer(wx.HORIZONTAL)
+        self.box.AddSpacer(5)
+        self.box.Add(self.slider)
+        self.box.AddSpacer(10)
+        self.box.Add(self.valueLabel)
+        self.SetSizer(self.box)
+
+        self.slider.Bind(wx.EVT_SLIDER, self.onSlider)
+
+    def onSlider(self, event):
+        """"""
+
+        self.valueLabel = self.labels[self.slider.GetValue()]
+        wx.PostEvent(self, PhaseShiftSliderEvent)
 
 
 class Control(wx.Panel):
