@@ -203,7 +203,8 @@ class PhaseShiftSlider(wx.Panel):
         """"""
 
         super().__init__(parent)
-        self.slider = wx.Slider(self, value=0, min=0, max=24 style=wx.SL_AUTOTICKS)
+        self.slider = wx.Slider(self, value=0, minValue=0, maxValue=24, style=wx.SL_AUTOTICKS)
+        self.value = 0
         self.valueLabel = wx.StaticText(self, label="0")
         self.labels = [str(i) + "\u03c0 / 12" for i in range(25)]
         self.labels[0] = "0"
@@ -222,8 +223,10 @@ class PhaseShiftSlider(wx.Panel):
     def onSlider(self, event):
         """"""
 
-        self.valueLabel = self.labels[self.slider.GetValue()]
-        wx.PostEvent(self, PhaseShiftSliderEvent)
+        v = self.slider.GetValue()
+        self.value = np.pi * v / 12
+        self.valueLabel = self.labels[v]
+        wx.PostEvent(self, PhaseShiftSliderEvent())
 
 
 class Control(wx.Panel):
@@ -236,7 +239,6 @@ class Control(wx.Panel):
 
         self.lissajous = lis
         self.canvas = glcan
-        self._delta = np.linspace(0, 2 * np.pi, num=100)
 
         self.xSlider = FrequencySlider(self, "x frequency:", initValue=self.lissajous.xFreq)
         self.ySlider = FrequencySlider(self, "y frequency:", initValue=self.lissajous.yFreq)
@@ -247,7 +249,7 @@ class Control(wx.Panel):
         self.freqControlBox.Add(self.ySlider)
         self.freqControlBox.AddSpacer(10)
 
-        self.deltaSlider = wx.Slider(self, minValue=1, maxValue=100)
+        self.deltaSlider = PhaseShiftSlider(self)
         self.phaseControlBox = wx.StaticBoxSizer(wx.VERTICAL, self, "Phase shift control")
         self.phaseControlBox.AddSpacer(10)
         self.phaseControlBox.Add(self.deltaSlider)
@@ -272,7 +274,7 @@ class Control(wx.Panel):
 
         self.xSlider.Bind(EVT_FSLIDER, self.onXSlider)
         self.ySlider.Bind(EVT_FSLIDER, self.onYSlider)
-        self.deltaSlider.Bind(wx.EVT_SLIDER, self.on_delta_slider)
+        self.deltaSlider.Bind(EVT_PSLIDER, self.onDeltaSlider)
         self.resetButton.Bind(wx.EVT_BUTTON, self.on_button)
 
     def onXSlider(self, event):
@@ -285,9 +287,9 @@ class Control(wx.Panel):
         self.lissajous.yFreq = self.ySlider.value
         self.canvas.init_gl()
 
-    def on_delta_slider(self, event):
+    def onDeltaSlider(self, event):
         """"""
-        self.lissajous.delta = self._delta[self.deltaSlider.GetValue()-1]
+        self.lissajous.delta = self.deltaSlider.value
         self.canvas.init_gl()
 
     def on_button(self, event):
