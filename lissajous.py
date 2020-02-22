@@ -7,6 +7,7 @@ from OpenGL import GL, GLU
 
 FrequencySliderEvent, EVT_FSLIDER = wxevt.NewEvent()
 PhaseShiftSliderEvent, EVT_PSLIDER = wxevt.NewEvent()
+AnimationControlEvent, EVT_ACONTROL = wxevt.NewEvent()
 
 class Lissajous():
     """Lissajous
@@ -15,30 +16,17 @@ class Lissajous():
     def __init__(self, xFreq, yFreq, phaseShift):
         """Initialise"""
 
-        self.width = 1
-        self.height = 1
-        self.xScale = 2 * np.pi / self.width
-        self.yScale = 2 * np.pi / self.height
         self.x = 0
-        self.y = self.height / 2
+        self.y = 0
         self.xFreq = xFreq
         self.yFreq = yFreq
         self.delta = phaseShift
 
-    def initialise(self, width=1, height=1):
-        """"""
-
-        self.width = width
-        self.height = height
-        self.xScale = 2 * np.pi / self.width
-        self.yScale = 2 * np.pi / self.height
-        self.y = self.height / 2
-
     def updatePattern(self, dt):
         """"""
 
-        self.x = np.sin(self.xFreq * dt * self.xScale)
-        self.y = np.sin(self.yFreq * dt * self.yScale + self.delta)
+        self.x = np.sin(self.xFreq * dt)
+        self.y = np.sin(self.yFreq * dt + self.delta)
 
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
@@ -69,11 +57,20 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         self.parent = parent
         self.lissajous = lis
-        self.counter = 0
-        self.n = 1000
+        self.numPoints = 0
         self.timer = wx.Timer(self)
-        self.points = np.empty((self.n,2))
-        self.colours = np.linspace((0,0,0), (1,1,1), num=self.n)
+        self.timerStep = 10
+
+        self.cycles = 10
+        self.numPointsFrozen = 1000 * self.cycles + 1
+        self.points = np.zeros((self.numPointsFrozen, 2))
+        self.colours = np.zeros((self.numPointsFrozen, 3))
+
+        self.numPointsToAnimate = 1000
+        self.animationTimestep = 2 * np.pi / (1000)
+        self.currentTimestep = 0
+
+        self.bFrozen = True
 
         # Set the context to the canvas
         self.init = False
@@ -81,22 +78,13 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         # Bind events to widgets
         self.Bind(wx.EVT_PAINT, self.on_paint)
-        self.Bind(wx.EVT_TIMER, self.on_timer)
 
     def init_gl(self):
         """Configure and initialise the 2D OpenGL context."""
 
         self.SetCurrent(self.context)
-        self.counter = self.n
         size = self.GetClientSize()
 
-        for i in range (self.n):
-            self.lissajous.updatePattern(i)
-            self.points[i] = [self.lissajous.x * size.width * 0.75,
-                              self.lissajous.y * size.height * 0.75]
-
-        GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
-        GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
         GL.glEnableClientState(GL.GL_VERTEX_ARRAY)
         GL.glEnableClientState(GL.GL_COLOR_ARRAY)
 
@@ -107,24 +95,54 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glOrtho(-size.width, size.width, -size.height, size.height, 0, 1)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
-        self.timer.Start(40)
+        if self.bFrozen:
+            self.initGlFrozen()
+        else:
+            self.initGlAnimate()
 
-    def render(self):
-        """Handle all drawing operations."""
+    def initGlFrozen(self):
+        """Configure and initialise the 2D OpenGL context."""
 
         self.SetCurrent(self.context)
-        if not self.init:
-            # Configure the viewport, modelview and projection matrices
-            self.init_gl()
-            self.init = True
+        size = self.GetClientSize()
+        self.points = np.zeros((self.numPointsFrozen, 2))
+        self.colours = np.ones((self.numPointsFrozen, 3))
 
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
+        count = 0
+        for i in np.linspace(0, 2 * self.cycles * np.pi, self.numPointsFrozen):
+            self.lissajous.updatePattern(i)
+            self.points[count] = [self.lissajous.x * size.width * 0.75,
+                                  self.lissajous.y * size.height * 0.75]
+            count += 1
 
-        # Draw
-        GL.glDrawArrays(GL.GL_LINE_STRIP, 0, self.n)
+        GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
+        GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
+        self.numPoints = self.numPointsFrozen
 
-        GL.glFlush()
-        self.SwapBuffers()
+        self.init = True
+        self.Refresh()
+
+    def initGlAnimate(self):
+        """Configure and initialise the 2D OpenGL context."""
+
+        self.SetCurrent(self.context)
+        size = self.GetClientSize()
+        self.points = np.zeros((1, 2))
+        self.colours = np.ones((1, 3))
+        self.currentTimestep = self.animationTimestep
+
+        self.lissajous.updatePattern(self.currentTimestep)
+        self.points[0] = [self.lissajous.x * size.width * 0.75,
+                          self.lissajous.y * size.height * 0.75]
+
+        GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
+        GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
+        self.numPoints = 1
+
+        self.init = True
+
+        self.timer.Start(self.timerStep)
+        self.Bind(wx.EVT_TIMER, self.onInitialTimer)
 
     def on_paint(self, event):
         """Handle the paint event."""
@@ -133,22 +151,72 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         if not self.init:
             # Configure the viewport, modelview and projection matrices
             self.init_gl()
-            self.init = True
-        self.render()
 
-    def on_timer(self, event):
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
+
+        # Draw
+        GL.glDrawArrays(GL.GL_LINE_STRIP, 0, self.numPoints)
+
+        GL.glFlush()
+        self.SwapBuffers()
+
+    def onInitialTimer(self, event):
         """"""
 
         self.SetCurrent(self.context)
-        self.counter += 1
-        self.lissajous.updatePattern(self.counter)
-
         size = self.GetClientSize()
+        numStepsSoFar = len(self.points)
+
+        if numStepsSoFar < self.numPointsToAnimate:
+            numStepsSoFar += 1
+            self.currentTimestep += self.animationTimestep
+
+            self.lissajous.updatePattern(self.currentTimestep)
+            self.points = np.append(self.points,
+                                    [[self.lissajous.x * size.width * 0.75,
+                                      self.lissajous.y * size.height * 0.75]], 0)
+            self.colours = np.linspace((0, 0, 0), (1, 1, 1), numStepsSoFar)
+
+            GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
+            GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
+            self.numPoints = numStepsSoFar
+
+            self.Refresh()
+
+        else:
+            self.timer.Stop()
+            self.Unbind(wx.EVT_TIMER)
+
+            if numStepsSoFar > self.numPointsToAnimate:
+                self.points = self.points[:self.numPointsToAnimate]
+
+            self.colours = np.linspace((0, 0, 0), (1, 1, 1), self.numPointsToAnimate)
+            GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
+            self.numPoints = self.numPointsToAnimate
+
+            self.timer.Start(self.timerStep)
+            self.Bind(wx.EVT_TIMER, self.onTimer)
+
+    def onTimer(self, event):
+        """"""
+
+        self.SetCurrent(self.context)
+        size = self.GetClientSize()
+
+        self.currentTimestep += self.animationTimestep
+        self.lissajous.updatePattern(self.currentTimestep)
+
         self.points = np.roll(self.points, (-1, -1))
         self.points[-1] = [self.lissajous.x * size.width * 0.75,
                            self.lissajous.y * size.height * 0.75]
         GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
+
         self.Refresh()
+
+    def stopAnimate(self):
+        """"""
+        self.timer.Stop()
+        self.Unbind(wx.EVT_TIMER)
 
 
 class FrequencySlider(wx.Panel):
@@ -229,6 +297,52 @@ class PhaseShiftSlider(wx.Panel):
         wx.PostEvent(self, PhaseShiftSliderEvent())
 
 
+class AnimationControls(wx.Panel):
+    """"""
+
+    def __init__(self, parent):
+        """"""
+
+        super().__init__(parent)
+        self.bReset = False
+        self.bAnimate = False
+        self.animateButton = wx.Button(self, label="Turn animation on ")
+        self.resetButton = wx.Button(self, label="Reset")
+        self.resetButton.Disable()
+
+        self.box = wx.BoxSizer(wx.HORIZONTAL)
+        self.box.AddSpacer(5)
+        self.box.Add(self.animateButton)
+        self.box.AddSpacer(20)
+        self.box.Add(self.resetButton)
+        self.box.AddSpacer(5)
+        self.SetSizer(self.box)
+
+        self.animateButton.Bind(wx.EVT_BUTTON, self.onAnimateButton)
+        self.resetButton.Bind(wx.EVT_BUTTON, self.onResetButton)
+
+    def onAnimateButton(self, event):
+        """"""
+
+        if self.bAnimate:
+            self.bAnimate = False
+            self.animateButton.SetLabel("Turn animation on ")
+            self.resetButton.Disable()
+
+        else:
+            self.bAnimate = True
+            self.animateButton.SetLabel("Turn animation off")
+            self.resetButton.Enable()
+
+        wx.PostEvent(self, AnimationControlEvent())
+
+    def onResetButton(self, event):
+        """"""
+
+        self.bReset = True
+        wx.PostEvent(self, AnimationControlEvent())
+
+
 class Control(wx.Panel):
     """"""
 
@@ -255,11 +369,10 @@ class Control(wx.Panel):
         self.phaseControlBox.Add(self.deltaSlider, 0, wx.EXPAND)
         self.phaseControlBox.AddSpacer(10)
 
-        self.resetButton = wx.Button(self)
-        self.resetButton.SetLabel("Reset")
+        self.animationButtons = AnimationControls(self)
         self.animationControlBox = wx.StaticBoxSizer(wx.VERTICAL, self, "Animation controls")
         self.animationControlBox.AddSpacer(10)
-        self.animationControlBox.Add(self.resetButton)
+        self.animationControlBox.Add(self.animationButtons)
         self.animationControlBox.AddSpacer(10)
 
         self.box = wx.BoxSizer(wx.VERTICAL)
@@ -275,27 +388,38 @@ class Control(wx.Panel):
         self.xSlider.Bind(EVT_FSLIDER, self.onXSlider)
         self.ySlider.Bind(EVT_FSLIDER, self.onYSlider)
         self.deltaSlider.Bind(EVT_PSLIDER, self.onDeltaSlider)
-        self.resetButton.Bind(wx.EVT_BUTTON, self.on_button)
+        self.animationButtons.Bind(EVT_ACONTROL, self.onAnimationButtons)
 
     def onXSlider(self, event):
         """"""
         self.lissajous.xFreq = self.xSlider.value
-        self.canvas.init_gl()
+        self.canvas.init = False
+        self.canvas.Refresh()
 
     def onYSlider(self, event):
         """"""
         self.lissajous.yFreq = self.ySlider.value
-        self.canvas.init_gl()
+        self.canvas.init = False
+        self.canvas.Refresh()
 
     def onDeltaSlider(self, event):
         """"""
         self.lissajous.delta = self.deltaSlider.value
-        self.canvas.init_gl()
+        self.canvas.init = False
+        self.canvas.Refresh()
 
-    def on_button(self, event):
+    def onAnimationButtons(self, event):
         """"""
-        self.canvas.init_gl()
+        self.canvas.stopAnimate()
 
+        if self.animationButtons.bReset:
+            self.animationButtons.bReset = False
+
+        else:
+            self.canvas.bFrozen = not self.animationButtons.bAnimate
+
+        self.canvas.init = False
+        self.canvas.Refresh()
 
 
 class Gui(wx.Frame):
@@ -314,7 +438,6 @@ class Gui(wx.Frame):
         self.SetSizeHints(600, 600)  # Controls minimum parent window size
 
         self.lissajous = lis
-        self.lissajous.initialise(width, height)
         self.canvas = MyGLCanvas(self, self.lissajous)
         self.control = Control(self, self.lissajous, self.canvas)
 
