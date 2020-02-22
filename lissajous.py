@@ -430,12 +430,12 @@ class Gui(wx.Frame):
     title: title of the window.
     """
 
-    def __init__(self, title, lis, width=600, height=600):
+    def __init__(self, title, lis):
         """Initialise tabs."""
 
-        super().__init__(parent=None, title=title, size=(width, height),
+        super().__init__(parent=None,
+                         title=title,
                          style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
-        self.SetSizeHints(600, 600)  # Controls minimum parent window size
 
         self.lissajous = lis
         self.canvas = MyGLCanvas(self, self.lissajous)
