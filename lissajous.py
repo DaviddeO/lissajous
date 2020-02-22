@@ -9,6 +9,7 @@ FrequencySliderEvent, EVT_FSLIDER = wxevt.NewEvent()
 PhaseShiftSliderEvent, EVT_PSLIDER = wxevt.NewEvent()
 AnimationControlEvent, EVT_ACONTROL = wxevt.NewEvent()
 
+
 class Lissajous():
     """Lissajous
     """
@@ -27,6 +28,7 @@ class Lissajous():
 
         self.x = np.sin(self.xFreq * dt)
         self.y = np.sin(self.yFreq * dt + self.delta)
+
 
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
@@ -174,7 +176,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.lissajous.updatePattern(self.currentTimestep)
             self.points = np.append(self.points,
                                     [[self.lissajous.x * size.width * 0.75,
-                                      self.lissajous.y * size.height * 0.75]], 0)
+                                      self.lissajous.y * size.height * 0.75]],
+                                    0)
             self.colours = np.linspace((0, 0, 0), (1, 1, 1), numStepsSoFar)
 
             GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
@@ -190,7 +193,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             if numStepsSoFar > self.numPointsToAnimate:
                 self.points = self.points[:self.numPointsToAnimate]
 
-            self.colours = np.linspace((0, 0, 0), (1, 1, 1), self.numPointsToAnimate)
+            self.colours = np.linspace((0, 0, 0), (1, 1, 1),
+                                       self.numPointsToAnimate)
             GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
             self.numPoints = self.numPointsToAnimate
 
@@ -222,7 +226,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 class FrequencySlider(wx.Panel):
     """"""
 
-    def __init__(self, parent, labelText, initValue=1, initStyle=wx.SL_HORIZONTAL, initMin=1, initMax=30):
+    def __init__(self, parent, labelText, initValue=1,
+                 initStyle=wx.SL_HORIZONTAL, initMin=1, initMax=30):
         """"""
 
         super().__init__(parent)
@@ -230,14 +235,16 @@ class FrequencySlider(wx.Panel):
 
         self.slider = wx.Slider(self, value=initValue, style=initStyle,
                                 minValue=initMin * 10, maxValue=initMax * 10)
-        self.spinCtrl = wx.SpinCtrlDouble(self, initial=initValue, min=initMin, max=initMax, inc=0.1)
+        self.spinCtrl = wx.SpinCtrlDouble(self, initial=initValue,
+                                          min=initMin, max=initMax, inc=0.1)
         self.label = wx.StaticText(self, label=labelText)
 
         self.vbox = wx.BoxSizer(wx.VERTICAL)
-        self.vbox.Add(self.slider, 1, wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL)
+        self.vbox.Add(self.slider, 1, wx.EXPAND | wx.ALIGN_CENTRE_HORIZONTAL)
         self.vbox.AddSpacer(10)
         self.spinCtrl.SetSize(self.slider.GetSize())
-        self.vbox.Add(self.spinCtrl, 1, wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL)
+        self.vbox.Add(self.spinCtrl, 1,
+                      wx.EXPAND | wx.ALIGN_CENTRE_HORIZONTAL)
 
         self.hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox.AddSpacer(5)
@@ -271,7 +278,8 @@ class PhaseShiftSlider(wx.Panel):
         """"""
 
         super().__init__(parent)
-        self.slider = wx.Slider(self, value=0, minValue=0, maxValue=24, style=wx.SL_AUTOTICKS)
+        self.slider = wx.Slider(self, value=0, minValue=0,
+                                maxValue=24, style=wx.SL_AUTOTICKS)
         self.value = 0
         self.valueLabel = wx.StaticText(self, label="0 rad")
         self.labels = [str(i) + "\u03c0 / 12 rad" for i in range(25)]
@@ -354,9 +362,13 @@ class Control(wx.Panel):
         self.lissajous = lis
         self.canvas = glcan
 
-        self.xSlider = FrequencySlider(self, "x frequency:", initValue=self.lissajous.xFreq)
-        self.ySlider = FrequencySlider(self, "y frequency:", initValue=self.lissajous.yFreq)
-        self.freqControlBox = wx.StaticBoxSizer(wx.VERTICAL, self, "Frequency Controls")
+        self.xSlider = FrequencySlider(self, "x frequency:",
+                                       initValue=self.lissajous.xFreq)
+        self.ySlider = FrequencySlider(self, "y frequency:",
+                                       initValue=self.lissajous.yFreq)
+
+        self.freqControlBox = wx.StaticBoxSizer(wx.VERTICAL, self,
+                                                "Frequency Controls")
         self.freqControlBox.AddSpacer(10)
         self.freqControlBox.Add(self.xSlider)
         self.freqControlBox.AddSpacer(30)
@@ -364,13 +376,15 @@ class Control(wx.Panel):
         self.freqControlBox.AddSpacer(10)
 
         self.deltaSlider = PhaseShiftSlider(self)
-        self.phaseControlBox = wx.StaticBoxSizer(wx.VERTICAL, self, "Phase shift control")
+        self.phaseControlBox = wx.StaticBoxSizer(wx.VERTICAL, self,
+                                                 "Phase shift control")
         self.phaseControlBox.AddSpacer(10)
         self.phaseControlBox.Add(self.deltaSlider, 0, wx.EXPAND)
         self.phaseControlBox.AddSpacer(10)
 
         self.animationButtons = AnimationControls(self)
-        self.animationControlBox = wx.StaticBoxSizer(wx.VERTICAL, self, "Animation controls")
+        self.animationControlBox = wx.StaticBoxSizer(wx.VERTICAL, self,
+                                                     "Animation controls")
         self.animationControlBox.AddSpacer(10)
         self.animationControlBox.Add(self.animationButtons)
         self.animationControlBox.AddSpacer(10)
@@ -435,7 +449,8 @@ class Gui(wx.Frame):
 
         super().__init__(parent=None,
                          title=title,
-                         style=(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
+                         style=(wx.DEFAULT_FRAME_STYLE &
+                                ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)))
 
         self.lissajous = lis
         self.canvas = MyGLCanvas(self, self.lissajous)
@@ -454,6 +469,7 @@ def main():
     gui = Gui("Lissajous", lis)
     gui.Show(True)
     app.MainLoop()
+
 
 if __name__ == "__main__":
     main()
