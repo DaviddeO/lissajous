@@ -1,3 +1,18 @@
+"""
+An application which draws out the Lissajous curve
+given user-specified settings
+
+Classes
+-------
+Lissajous: Handles the Lissajous operations
+MyGLCanvas: Handles the drawing operations
+FrequencySlider: Implements the freq controls
+PhaseShiftSlider: Implements the phaseshift controls
+AnimationControls: Implements the animation controls
+Control: Provides the user controls
+Gui: The main application window
+"""
+
 import wx
 import wx.glcanvas as wxcanvas
 import wx.lib.newevent as wxevt
@@ -11,11 +26,33 @@ AnimationControlEvent, EVT_ACONTROL = wxevt.NewEvent()
 
 
 class Lissajous():
-    """Lissajous
+    """
+    Handle the Lissajous variables and operations
+
+    Parameters
+    ----------
+    xFreq: Sets the initial x angular frequency
+    yFreq: Sets the initial y angular frequency
+    phaseShift: Sets the initial phaseshift
+
+    Variables
+    ---------
+    x: x value after the latest Lissajous update given by
+       sin(xFreq * t)
+    y: y value after the latest Lissajous update given by
+       sin(yFreq * t + delta)
+    xFreq: The x angular frequency
+    yFreq: The y angular frequency
+    delta: The phaseshift, in radians
+
+    Methods
+    -------
+    updatePattern(dt): Perform an update for the x and y values of the Lissajous curve
+                       at the given value of dt
     """
 
     def __init__(self, xFreq, yFreq, phaseShift):
-        """Initialise"""
+        """Initialise the class"""
 
         self.x = 0
         self.y = 0
@@ -24,35 +61,67 @@ class Lissajous():
         self.delta = phaseShift
 
     def updatePattern(self, dt):
-        """"""
+        """
+        Perform an update for the x and y values of the Lissajous curve
+        at the given value of dt
+        """
 
         self.x = np.sin(self.xFreq * dt)
         self.y = np.sin(self.yFreq * dt + self.delta)
 
 
 class MyGLCanvas(wxcanvas.GLCanvas):
-    """Handle all drawing operations.
+    """
+    Handle all drawing operations
 
     Parameters
     ----------
-    parent: parent widget - the signal panel
+    parent: Parent widget - the Gui frame
+    lis: An instance of the Lissajous class
+    size_: Sets the size of the canvas
+
+    Variables
+    ----------
+    parent: Parent widget - the Gui frame
+    lissajous: An instance of the Lissajous class
+    numPoints: Number of points to draw on the Glcanvas
+    timer: The timer used to update the animation of the Lissajous curve
+    timerStep: Specifies how often to update the animation; in milliseconds
+    cycles: Number of cycles for which to draw the Lissajous curve when
+            not animating
+    points: Numpy array holding the coordinates for all the points of the
+            Lissajous curve to be rendered
+    colours: Numpy array holding the colour of each point to be rendered
+    numPointsFrozen: Number of points used to render Lissajous curve when
+                     not animating
+    numPointsToAnimate: Number of points to render when animating
+                        the Lissajous curve
+    animationTimestep: The time resolution at which to evaluate the
+                       Lissajous curve when animating
+    currentTimestep: The current timestep at which to evaluate the
+                     Lissajous curve when animating
+    bFrozen: bool specifying whether in animating or frozen mode
     init: bool specifying if canvas has been initialised
-    context: the GL context
+    context: The GL context
 
-    Public methods
+    Methods
     --------------
-    initGl(self): Configures the OpenGL context.
-
-    render(self, text): Handles all drawing operations.
-
-    onPaint(self, event): Handles the paint event.
+    initGl(self): Configures the OpenGL context and modelview matrix
+    initGlFrozen(self): Sets up the points and colours arrays for rendering
+                        in frozen mode
+    initGlAnimate(self): Sets up the points and colours arrays for animating
+    onPaint(self, event): Handles the paint event and drawing operations
+    onInitialTimer(self, event): Start animation drawing from 0 to
+                                 numPointsToAnimate points
+    onTimer(self, event): Proceed with animation
+    stopAnimate(self): Stop the animation
     """
 
-    def __init__(self, parent, lis, initSize=(500, 500)):
+    def __init__(self, parent, lis, size_=(500, 500)):
         """Initialise canvas properties and useful variables."""
 
         super().__init__(parent, -1,
-                         size=initSize,
+                         size=size_,
                          attribList=[wxcanvas.WX_GL_RGBA,
                                      wxcanvas.WX_GL_DOUBLEBUFFER,
                                      wxcanvas.WX_GL_DEPTH_SIZE, 16, 0])
@@ -82,7 +151,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.Bind(wx.EVT_PAINT, self.onPaint)
 
     def initGl(self):
-        """Configure and initialise the 2D OpenGL context."""
+        """Configures the OpenGL context and modelview matrix"""
 
         self.SetCurrent(self.context)
         size = self.GetClientSize()
@@ -103,7 +172,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.initGlAnimate()
 
     def initGlFrozen(self):
-        """Configure and initialise the 2D OpenGL context."""
+        """
+        Sets up the points and colours arrays for rendering
+        in frozen mode
+        """
 
         self.SetCurrent(self.context)
         size = self.GetClientSize()
@@ -125,7 +197,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.Refresh()
 
     def initGlAnimate(self):
-        """Configure and initialise the 2D OpenGL context."""
+        """Sets up the points and colours arrays for animating"""
 
         self.SetCurrent(self.context)
         size = self.GetClientSize()
@@ -147,7 +219,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.Bind(wx.EVT_TIMER, self.onInitialTimer)
 
     def onPaint(self, event):
-        """Handle the paint event."""
+        """Handles the paint event and drawing operations"""
 
         self.SetCurrent(self.context)
         if not self.init:
@@ -163,7 +235,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.SwapBuffers()
 
     def onInitialTimer(self, event):
-        """"""
+        """Start animation drawing from 0 to numPointsToAnimate points"""
 
         self.SetCurrent(self.context)
         size = self.GetClientSize()
@@ -202,7 +274,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.Bind(wx.EVT_TIMER, self.onTimer)
 
     def onTimer(self, event):
-        """"""
+        """Proceed with animation"""
 
         self.SetCurrent(self.context)
         size = self.GetClientSize()
@@ -218,26 +290,52 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.Refresh()
 
     def stopAnimate(self):
-        """"""
+        """Stop the animation"""
         self.timer.Stop()
         self.Unbind(wx.EVT_TIMER)
 
 
 class FrequencySlider(wx.Panel):
-    """"""
+    """
+    Implement frequency control for Lissajous curve
 
-    def __init__(self, parent, labelText, initValue=1,
-                 initStyle=wx.SL_HORIZONTAL, initMin=1, initMax=30):
-        """"""
+    Parameters
+    ----------
+    parent: Parent widget - the control panel
+    label_: Label for the panel
+    value_: Initial value for the frequency
+    style_: The panel's style
+    min_: The lower limit of the allowed frequency range
+    max_: The upper limit of the allowed frequency range
+
+    Variables
+    ---------
+    value: The desired frequency value
+    slider: The wx.Slider object to allow the user to specify the frequency
+    spinCtrl: The wx.SpinCtrlDouble object to allow the user to specify the
+              frequency
+    label: Label for the panel
+    vbox: The layout sizer for slider and spinCtrl
+    hbox: The layout sizer for the panel
+
+    Methods
+    -------
+    onSlider(self, event): Handles the slider event
+    onSpin(self, event): Handles the spin event
+    """
+
+    def __init__(self, parent, label_, value_=1,
+                 style_=wx.SL_HORIZONTAL, min_=1, max_=30):
+        """Initialises and lays out the panel"""
 
         super().__init__(parent)
-        self.value = initValue
+        self.value = value_
 
-        self.slider = wx.Slider(self, value=initValue, style=initStyle,
-                                minValue=initMin * 10, maxValue=initMax * 10)
-        self.spinCtrl = wx.SpinCtrlDouble(self, initial=initValue,
-                                          min=initMin, max=initMax, inc=0.1)
-        self.label = wx.StaticText(self, label=labelText)
+        self.slider = wx.Slider(self, value=value_, style=style_,
+                                minValue=min_ * 10, maxValue=max_ * 10)
+        self.spinCtrl = wx.SpinCtrlDouble(self, initial=value_,
+                                          min=min_, max=max_, inc=0.1)
+        self.label = wx.StaticText(self, label=label_)
 
         self.vbox = wx.BoxSizer(wx.VERTICAL)
         self.vbox.Add(self.slider, 1, wx.EXPAND | wx.ALIGN_CENTRE_HORIZONTAL)
@@ -257,14 +355,14 @@ class FrequencySlider(wx.Panel):
         self.spinCtrl.Bind(wx.EVT_SPINCTRLDOUBLE, self.onSpin)
 
     def onSlider(self, event):
-        """"""
+        """Handles the slider event"""
 
         self.value = self.slider.GetValue() / 10
         self.spinCtrl.SetValue(self.value)
         wx.PostEvent(self, FrequencySliderEvent())
 
     def onSpin(self, event):
-        """"""
+        """Handles the spin event"""
 
         self.value = self.spinCtrl.GetValue()
         self.slider.SetValue(int(self.value * 10))
@@ -272,10 +370,28 @@ class FrequencySlider(wx.Panel):
 
 
 class PhaseShiftSlider(wx.Panel):
-    """"""
+    """
+    Implement phase shift control for the Lissajous curve
+
+    Parameters
+    ----------
+    parent: Parent widget - the control panel
+
+    Variables
+    ---------
+    slider: The wx.Slider object to allow the user to specify the phaseshift
+    value: The phaseshift amount
+    valueLabel: The text displaying the phaseshift amount
+    labels: List holding the strings for valueLabel
+    box: The layout sizer for the panel
+
+    Methods
+    -------
+    onSlider(self, event): Handles the slider event
+    """
 
     def __init__(self, parent):
-        """"""
+        """Initialises and lays out the panel"""
 
         super().__init__(parent)
         self.slider = wx.Slider(self, value=0, minValue=0,
@@ -297,7 +413,7 @@ class PhaseShiftSlider(wx.Panel):
         self.slider.Bind(wx.EVT_SLIDER, self.onSlider)
 
     def onSlider(self, event):
-        """"""
+        """"Handles the slider event"""
 
         v = self.slider.GetValue()
         self.value = np.pi * v / 12
@@ -306,7 +422,28 @@ class PhaseShiftSlider(wx.Panel):
 
 
 class AnimationControls(wx.Panel):
-    """"""
+    """
+    Implement animation controls; to stop, start and reset the animation
+
+    Parameters
+    ----------
+    parent: Parent widget - the control panel
+
+    Variables
+    ---------
+    bReset: bool specifying whether the animation should be reset
+    bAnimate: bool specifying whether in animation or frozen mode
+    animateButton: The wx.Button object allowing the user to turn
+                   the animation mode on/off
+    resetButton: The wx.Button object allowing the user to reset
+                 the animation
+    box: The layout sizer for the panel
+
+    Methods
+    -------
+    onAnimateButton(self, event): Handles the animation button event
+    onResetButton(self, event): Handles the reset button event
+    """
 
     def __init__(self, parent):
         """"""
@@ -330,7 +467,7 @@ class AnimationControls(wx.Panel):
         self.resetButton.Bind(wx.EVT_BUTTON, self.onResetButton)
 
     def onAnimateButton(self, event):
-        """"""
+        """Handles the animation button event"""
 
         if self.bAnimate:
             self.bAnimate = False
@@ -345,17 +482,47 @@ class AnimationControls(wx.Panel):
         wx.PostEvent(self, AnimationControlEvent())
 
     def onResetButton(self, event):
-        """"""
+        """Handles the reset button event"""
 
         self.bReset = True
         wx.PostEvent(self, AnimationControlEvent())
 
 
 class Control(wx.Panel):
-    """"""
+    """
+    Implement the control panel
+
+    Parameters
+    ----------
+    parent: Parent widget - the Gui frame
+    lis: An instance of the Lissajous class
+    glcan: An instance of the MyGLCanvas class
+
+    Variables
+    ---------
+    lissajous: An instance of the Lissajous class
+    canvas: An instance of the MyGLCanvas class
+    xSlider: The controls for the x frequency
+    ySlider: The controls for the y frequency
+    freqControlBox: Layout sizer for the frequency controls
+    deltaSlider: The slider control for the phaseshift
+    phaseControlBox: Layout sizer for the phase control
+    animationButtons: The controls for the animation
+    animationControlBox: Layout sizer for the animation controls
+    box: The layout sizer for the panel
+
+    Methods
+    -------
+    onXSlider(self, event): Handles the event the x frequency has been changed
+    onYSlider(self, event): Handles the event the y frequency has been changed
+    onDeltaSlider(self, event): Handles the event the phaseshift has been
+                                changed
+    onAnimationButtons(self, event): Handles the event an animation control
+                                     button has been clicked
+    """
 
     def __init__(self, parent, lis, glcan):
-        """"""
+        """Initialises and lays out the panel"""
 
         super().__init__(parent)
 
@@ -363,9 +530,9 @@ class Control(wx.Panel):
         self.canvas = glcan
 
         self.xSlider = FrequencySlider(self, "x frequency:",
-                                       initValue=self.lissajous.xFreq)
+                                       value_=self.lissajous.xFreq)
         self.ySlider = FrequencySlider(self, "y frequency:",
-                                       initValue=self.lissajous.yFreq)
+                                       value_=self.lissajous.yFreq)
 
         self.freqControlBox = wx.StaticBoxSizer(wx.VERTICAL, self,
                                                 "Frequency Controls")
@@ -405,25 +572,25 @@ class Control(wx.Panel):
         self.animationButtons.Bind(EVT_ACONTROL, self.onAnimationButtons)
 
     def onXSlider(self, event):
-        """"""
+        """Handles the event the x frequency has been changed"""
         self.lissajous.xFreq = self.xSlider.value
         self.canvas.init = False
         self.canvas.Refresh()
 
     def onYSlider(self, event):
-        """"""
+        """Handles the event the y frequency has been changed"""
         self.lissajous.yFreq = self.ySlider.value
         self.canvas.init = False
         self.canvas.Refresh()
 
     def onDeltaSlider(self, event):
-        """"""
+        """Handles the event the phaseshift has been changed"""
         self.lissajous.delta = self.deltaSlider.value
         self.canvas.init = False
         self.canvas.Refresh()
 
     def onAnimationButtons(self, event):
-        """"""
+        """Handles the event an animation control button has been clicked"""
         self.canvas.stopAnimate()
 
         if self.animationButtons.bReset:
@@ -437,15 +604,23 @@ class Control(wx.Panel):
 
 
 class Gui(wx.Frame):
-    """Configure the main window.
+    """The main window
 
     Parameters
     ----------
-    title: title of the window.
+    title: Title of the window
+    lis: An instance of the Lissajous class
+
+    Variables
+    ---------
+    lissajous: An instance of the Lissajous class
+    canvas: An instance of the MyGLCanvas class
+    control: The control panel
+    box: The layout sizer for the panel
     """
 
     def __init__(self, title, lis):
-        """Initialise tabs."""
+        """Initialise the GUI"""
 
         super().__init__(parent=None,
                          title=title,
