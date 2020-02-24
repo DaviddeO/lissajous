@@ -9,7 +9,7 @@ Classes
 Lissajous: Handles the Lissajous operations
 MyGLCanvas: Handles the drawing operations
 FrequencySlider: Implements the freq controls
-PhaseShiftSlider: Implements the phaseshift controls
+PhaseShiftSlider: Implements the phase shift controls
 AnimationControls: Implements the animation controls
 Control: Provides the user controls
 Gui: The main application window
@@ -37,7 +37,7 @@ class Lissajous():
     ----------
     xFreq: Sets the initial x angular frequency
     yFreq: Sets the initial y angular frequency
-    phaseShift: Sets the initial phaseshift
+    phaseShift: Sets the initial phase shift
 
     Variables
     ---------
@@ -47,7 +47,7 @@ class Lissajous():
        sin(yFreq * t + delta)
     xFreq: The x angular frequency
     yFreq: The y angular frequency
-    delta: The phaseshift, in radians
+    delta: The phase shift, in radians
 
     Methods
     -------
@@ -146,8 +146,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.numPoints = 0
         self.bFrozen = True
 
-        # Set the context to the canvas;
-        # bind the paint method, onPaint, to the paint event
+        # Set the context to the canvas
+        # Bind the paint method, onPaint, to the paint event
         self.init = False
         self.context = wxcanvas.GLContext(self)
         self.Bind(wx.EVT_PAINT, self.onPaint)
@@ -438,9 +438,9 @@ class PhaseShiftSlider(wx.Panel):
 
     Variables
     ---------
-    slider: The wx.Slider object to allow the user to specify the phaseshift
-    value: The phaseshift amount
-    valueLabel: The text displaying the phaseshift amount
+    slider: The wx.Slider object to allow the user to specify the phase shift
+    value: The phase shift amount
+    valueLabel: The text displaying the phase shift amount
     labels: List holding the strings for valueLabel
     box: The layout sizer for the panel
 
@@ -586,7 +586,7 @@ class Control(wx.Panel):
     xSlider: The controls for the x frequency
     ySlider: The controls for the y frequency
     freqControlBox: Layout sizer for the frequency controls
-    deltaSlider: The slider control for the phaseshift
+    deltaSlider: The slider control for the phase shift
     phaseControlBox: Layout sizer for the phase control
     animationButtons: The controls for the animation
     animationControlBox: Layout sizer for the animation controls
@@ -596,7 +596,7 @@ class Control(wx.Panel):
     -------
     onXSlider(self, event): Handles the event the x frequency has been changed
     onYSlider(self, event): Handles the event the y frequency has been changed
-    onDeltaSlider(self, event): Handles the event the phaseshift has been
+    onDeltaSlider(self, event): Handles the event the phase shift has been
                                 changed
     onAnimationButtons(self, event): Handles the event an animation control
                                      button has been clicked
@@ -678,7 +678,7 @@ class Control(wx.Panel):
         self.canvas.Refresh()
 
     def onDeltaSlider(self, event):
-        """Handle the event the phaseshift has been changed."""
+        """Handle the event the phase shift has been changed."""
 
         # Set the new phase shift
         self.lissajous.delta = self.deltaSlider.value
