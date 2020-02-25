@@ -101,15 +101,16 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     currentTimestep: The current timestep at which to evaluate the
                      Lissajous curve when animating
     bFrozen: bool specifying whether in animating or frozen mode
-    init: bool specifying if canvas has been initialised
+    bInitialised: bool specifying if canvas has been initialised
     context: The GL context
 
     Methods
     --------------
-    initGl(self): Configures the OpenGL context and modelview matrix
-    initGlFrozen(self): Sets up the points and colours arrays for rendering
+    initialiseGL(self): Configures the OpenGL context and modelview matrix
+    initialiseGLFrozen(self): Sets up the points and colours arrays for rendering
                         in frozen mode
-    initGlAnimate(self): Sets up the points and colours arrays for animating
+    initialiseGLAnimate(self): Sets up the points and colours arrays
+                               for animating
     onPaint(self, event): Handles the paint event and drawing operations
     onInitialTimer(self, event): Start animation drawing from 0 to
                                  numPointsToAnimate points
@@ -148,11 +149,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         # Set the context to the canvas
         # Bind the paint method, onPaint, to the paint event
-        self.init = False
+        self.bInitialised = False
         self.context = wxcanvas.GLContext(self)
         self.Bind(wx.EVT_PAINT, self.onPaint)
 
-    def initGl(self):
+    def initialiseGL(self):
         """Configure the OpenGL context and modelview matrix."""
 
         # Make the OpenGL state, represented by context, current
@@ -175,11 +176,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         # Finish initialisation based on the mode, i.e. animation on or off
         if self.bFrozen:
-            self.initGlFrozen()     # Animation off
+            self.initialiseGLFrozen()     # Animation off
         else:
-            self.initGlAnimate()    # Animation on
+            self.initialiseGLAnimate()    # Animation on
 
-    def initGlFrozen(self):
+    def initialiseGLFrozen(self):
         """Set up points and colours arrays for rendering in frozen mode."""
         self.SetCurrent(self.context)
         size = self.GetClientSize()
@@ -206,10 +207,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.numPoints = self.numPointsFrozen
 
         # Call Refresh() to post the paint event and redraw the screen
-        self.init = True
+        self.bInitialised = True
         self.Refresh()
 
-    def initGlAnimate(self):
+    def initialiseGLAnimate(self):
         """Set up the points and colours arrays for animating."""
         self.SetCurrent(self.context)
         size = self.GetClientSize()
@@ -233,7 +234,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Keep track of the number of points calculated and need to be drawn
         self.numPoints = 1
 
-        self.init = True
+        self.bInitialised = True
 
         # Start a timer that notifies the canvas every timerStep milliseconds
         # This causes the onInitialTimer() function to be called
@@ -245,8 +246,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.SetCurrent(self.context)
 
         # Make sure the canvas has been initialised;
-        if not self.init:
-            self.initGl()
+        if not self.bInitialised:
+            self.initialiseGL()
 
         # OpenGL, in this case, uses a "double bufferring" system:
         # it displays one buffer whilst drawing to the other.
@@ -664,7 +665,7 @@ class Control(wx.Panel):
         self.lissajous.xFreq = self.xSlider.value
 
         # Re-initialise the canvas
-        self.canvas.init = False
+        self.canvas.bInitialised = False
         self.canvas.Refresh()
 
     def onYSlider(self, event):
@@ -674,7 +675,7 @@ class Control(wx.Panel):
         self.lissajous.yFreq = self.ySlider.value
 
         # Re-initialise the canvas
-        self.canvas.init = False
+        self.canvas.bInitialised = False
         self.canvas.Refresh()
 
     def onDeltaSlider(self, event):
@@ -684,7 +685,7 @@ class Control(wx.Panel):
         self.lissajous.delta = self.deltaSlider.value
 
         # Re-initialise the canvas
-        self.canvas.init = False
+        self.canvas.bInitialised = False
         self.canvas.Refresh()
 
     def onAnimationButtons(self, event):
@@ -702,7 +703,7 @@ class Control(wx.Panel):
             self.canvas.bFrozen = not self.animationButtons.bAnimate
 
         # Re-initialise the canvas in the correct drawing mode
-        self.canvas.init = False
+        self.canvas.bInitialised = False
         self.canvas.Refresh()
 
 
