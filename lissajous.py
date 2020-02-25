@@ -35,8 +35,8 @@ class Lissajous():
 
     Parameters
     ----------
-    xFreq: Sets the initial x angular frequency
-    yFreq: Sets the initial y angular frequency
+    xFreq_: Sets the initial x angular frequency
+    yFreq_: Sets the initial y angular frequency
     phaseShift: Sets the initial phase shift
 
     Variables
@@ -55,12 +55,12 @@ class Lissajous():
                        Lissajous curve at the given value of dt
     """
 
-    def __init__(self, xFreq, yFreq, phaseShift):
+    def __init__(self, xFreq_, yFreq_, phaseShift):
         """Initialise the class."""
         self.x = 0
         self.y = 0
-        self.xFreq = xFreq
-        self.yFreq = yFreq
+        self.xFreq = xFreq_
+        self.yFreq = yFreq_
         self.delta = phaseShift
 
     def updateLissajous(self, dt):
@@ -118,7 +118,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     stopAnimate(self): Stop the animation
     """
 
-    def __init__(self, parent, lis, size_=(500, 500)):
+    def __init__(self, parent, lis, size_=(600, 600)):
         """Initialise canvas properties and useful variables."""
 
         # Initialise the canvas
