@@ -201,8 +201,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             count += 1
 
         # Tell OpenGL that the vertex and colour arrays have been set
-        GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
-        GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
+        GL.glVertexPointer(2, GL.GL_DOUBLE, 0, self.points)
+        GL.glColorPointer(3, GL.GL_DOUBLE, 0, self.colours)
         self.numPoints = self.numPointsFrozen
 
         # Call Refresh() to post the paint event and redraw the screen
@@ -227,8 +227,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                           self.lissajous.y * size.height * self.scale]
 
         # Tell OpenGL the vertex and colour arrays have been updated
-        GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
-        GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
+        GL.glVertexPointer(2, GL.GL_DOUBLE, 0, self.points)
+        GL.glColorPointer(3, GL.GL_DOUBLE, 0, self.colours)
 
         # Keep track of the number of points calculated and need to be drawn
         self.numPoints = 1
@@ -285,8 +285,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.colours = np.linspace((0, 0, 0), (1, 1, 1), numStepsSoFar)
 
             # Tell OpenGL the vertex and colour arrays have been updated
-            GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
-            GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
+            GL.glVertexPointer(2, GL.GL_DOUBLE, 0, self.points)
+            GL.glColorPointer(3, GL.GL_DOUBLE, 0, self.colours)
             self.numPoints = numStepsSoFar
 
             # Call Refresh() to post the paint event and redraw the screen
@@ -306,7 +306,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             # This will no longer need to be updated every time
             self.colours = np.linspace((0, 0, 0), (1, 1, 1),
                                        self.numPointsToAnimate)
-            GL.glColorPointer(3, GL.GL_FLOAT, 0, self.colours)
+            GL.glColorPointer(3, GL.GL_DOUBLE, 0, self.colours)
             self.numPoints = self.numPointsToAnimate
 
             # Start the timer again
@@ -328,7 +328,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.points = np.roll(self.points, (-1, -1))
         self.points[-1] = [self.lissajous.x * size.width * self.scale,
                            self.lissajous.y * size.height * self.scale]
-        GL.glVertexPointer(2, GL.GL_FLOAT, 0, self.points)
+        GL.glVertexPointer(2, GL.GL_DOUBLE, 0, self.points)
 
         # Call Refresh() to post the paint event and redraw the screen
         self.Refresh()
