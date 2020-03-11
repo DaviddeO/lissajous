@@ -11,14 +11,14 @@ y = np.linspace(-1, 1, numPoints)
 points = np.zeros((numPoints, numPoints))
 
 t = np.arange(0, 2 * np.pi, dt)
-xt = np.sin(13 * t)
-yt = np.sin(14 * t)
+tx = np.sin(13 * t)
+ty = np.sin(14 * t)
 
 
 for i in range(len(x)):
-    expX = (x[i] - xt)**2 / sigma2X
+    expX = (x[i] - tx)**2 / sigma2X
     for j in range(len(y)):
-        expY = (y[j] - yt)**2 / sigma2Y
+        expY = (y[j] - ty)**2 / sigma2Y
         pwr = np.exp(-0.5 * (expX + expY))
         points[j][i] = np.sum(pwr)
 
