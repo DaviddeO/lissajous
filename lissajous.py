@@ -107,8 +107,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     Methods
     --------------
     initialiseGL(self): Configures the OpenGL context and modelview matrix
-    initialiseGLFrozen(self): Sets up the points and colours arrays for rendering
-                        in frozen mode
+    initialiseGLFrozen(self): Sets up the points and colours arrays for
+                              rendering in frozen mode
     initialiseGLAnimate(self): Sets up the points and colours arrays
                                for animating
     onPaint(self, event): Handles the paint event and drawing operations
@@ -120,7 +120,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def __init__(self, parent, lis, size_=(600, 600)):
         """Initialise canvas properties and useful variables."""
-
         # Initialise the canvas
         super().__init__(parent, -1,
                          size=size_,
@@ -155,7 +154,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def initialiseGL(self):
         """Configure the OpenGL context and modelview matrix."""
-
         # Make the OpenGL state, represented by context, current
         self.SetCurrent(self.context)
 
@@ -372,7 +370,6 @@ class FrequencySlider(wx.Panel):
     def __init__(self, parent, label_, value_=1,
                  style_=wx.SL_HORIZONTAL, min_=1, max_=30):
         """Initialise and lay out the panel."""
-
         # Initialise the panel
         super().__init__(parent)
 
@@ -408,7 +405,6 @@ class FrequencySlider(wx.Panel):
 
     def onSlider(self, event):
         """Handle the slider event."""
-
         # The slider values are ints
         # Divide by ten to get the specified range [1.0, 30.0]
         self.value = self.slider.GetValue() / 10
@@ -452,7 +448,6 @@ class PhaseShiftSlider(wx.Panel):
 
     def __init__(self, parent):
         """Initialise and lay out the panel."""
-
         # Initialise the panel
         super().__init__(parent)
 
@@ -519,7 +514,6 @@ class AnimationControls(wx.Panel):
 
     def __init__(self, parent):
         """Initialise and lay out the panel."""
-
         # Initialise the panel
         super().__init__(parent)
         self.bReset = False
@@ -605,7 +599,6 @@ class Control(wx.Panel):
 
     def __init__(self, parent, lis, glcan):
         """Initialise and lay out the panel."""
-
         # Initialise the panel
         super().__init__(parent)
 
@@ -660,7 +653,6 @@ class Control(wx.Panel):
 
     def onXSlider(self, event):
         """Handle the event the x frequency has been changed."""
-
         # Set the new x angular frequency
         self.lissajous.xFreq = self.xSlider.value
 
@@ -670,7 +662,6 @@ class Control(wx.Panel):
 
     def onYSlider(self, event):
         """Handle the event the y frequency has been changed."""
-
         # Set the new y angular frequency
         self.lissajous.yFreq = self.ySlider.value
 
@@ -680,7 +671,6 @@ class Control(wx.Panel):
 
     def onDeltaSlider(self, event):
         """Handle the event the phase shift has been changed."""
-
         # Set the new phase shift
         self.lissajous.delta = self.deltaSlider.value
 
@@ -690,7 +680,6 @@ class Control(wx.Panel):
 
     def onAnimationButtons(self, event):
         """Handle the event an animation control button has been clicked."""
-
         # If animating, stop
         self.canvas.stopAnimate()
 

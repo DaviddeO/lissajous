@@ -1,6 +1,4 @@
-"""
-A simple script to plot a Lissajous figure.
-"""
+"""A simple script to plot a Lissajous figure."""
 
 # Import required modules
 import numpy as np               # Numeric library

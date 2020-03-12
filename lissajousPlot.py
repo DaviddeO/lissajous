@@ -21,10 +21,12 @@ t = np.linspace(0, 2 * np.pi, 1000)
 
 # Define the functions x(t) and y(t)
 def x(omegaX, t):
+    """Calculate the Lissajous x coordinate."""
     return np.sin(omegaX * t)
 
 
 def y(omegaY, phi, t):
+    """Calculate the Lissajous y coordinate."""
     return np.sin(omegaY * t + phi)
 
 
@@ -51,6 +53,7 @@ sNum = Slider(axNum, 'Number of cycles', 0.5, 10,
 # Define the update functions
 # which are called every time the user uses one of the sliders
 def update(val):
+    """Update the values to be plotted and replot figure."""
     # Get the values from the sliders
     omegaX = sOmegaX.val
     omegaY = sOmegaY.val
@@ -64,6 +67,7 @@ def update(val):
 
 
 def updateT(val):
+    """Update the values to be plotted and replot figure."""
     # Make sure we update the t we defined earlier
     global t
 
