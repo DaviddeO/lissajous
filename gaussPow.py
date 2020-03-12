@@ -20,7 +20,7 @@ for i in range(len(x)):
     for j in range(len(y)):
         expY = (y[j] - ty)**2 / sigma2Y
         pwr = np.exp(-0.5 * (expX + expY))
-        points[j][i] = np.sum(pwr)
+        points[j][i] = dt * (np.sum(pwr[1:-1]) + (pwr[0] + pwr[-1]) / 2)
 
 fig, ax = plt.subplots()
 ax.imshow(points, interpolation="bilinear", origin="lower")
