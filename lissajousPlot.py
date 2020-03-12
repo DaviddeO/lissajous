@@ -1,3 +1,11 @@
+"""
+Lissajous curve sketcher (using Matplotlib.pyplot).
+
+This script plots a Lissajous figure and provides a graphical user
+interface to allow the user to vary the parameters in the Lissajous
+parametric equations.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
