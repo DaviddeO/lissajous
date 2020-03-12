@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt  # Plotting module
 
 # Initialise an array with values of t
 # Results in 1000 evenly spaced points in the interval [0, 2 * pi)
-t = np.linspace(0, 2 * np.pi, 1000, endpoint=false)
+t = np.linspace(0, 2 * np.pi, 1000, endpoint=False)
 
 # Calculate the Lissajous figure
 x = np.sin(t)
