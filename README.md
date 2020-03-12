@@ -8,7 +8,7 @@ Specifically, this resource explores how sinusoids and parametric equations are 
 - LissajousSlides.pdf
     - Slideshow with an overview of Lissajous figures and activities to work through.
 - LissajousHints.pdf
-    - Hints, tips and possible solutions for the activities in LissajousSlides.pdf.
+    - Hints, tips and possible solutions for the activities in LissajousSlides.pdf. (To-do)
 - lissajous.py
     - An interactive app which plots Lissajous figures for user-defined parameters. Can also animate those plots.
 - lissajousPlot.py
