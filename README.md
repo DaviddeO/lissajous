@@ -20,7 +20,7 @@ Specifically, this resource explores how sinusoids and parametric equations are 
 
 ### Using the Python scripts
 
-- All the scripts require NumPy and Matplotlib installed.
+- All the scripts require NumPy and Matplotlib to be installed.
 - To run lissajous.py, wxPython and PyOpenGL (and PyOpenGL-accelerate) are also required.
     - On Windows and Mac machines, these can be easily installed using the pip tool.
     - On Linux machines, certain dependencies need to be installed as well in order for wxPython to work.
