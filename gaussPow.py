@@ -31,7 +31,7 @@ t = np.arange(0, 2 * np.pi, dt)
 
 # Calculate the Lissajous figure
 tx = np.sin(t)
-ty = np.sin(t)
+ty = np.sin(t + np.pi / 2)
 
 # Run the numerical integration to find the energy distribution
 for i in range(len(x)):
