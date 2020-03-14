@@ -30,8 +30,8 @@ y = np.linspace(-1, 1, numPoints)
 t = np.arange(0, 2 * np.pi, dt)
 
 # Calculate the Lissajous figure
-tx = np.sin(13 * t)
-ty = np.sin(14 * t)
+tx = np.sin(t)
+ty = np.sin(t)
 
 # Run the numerical integration to find the energy distribution
 for i in range(len(x)):
