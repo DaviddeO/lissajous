@@ -1,6 +1,6 @@
 # Lissajous figures
 
-This resrouce looks at combining A-Level Maths and Further Maths with engineering applications.
+This resource looks at combining A-Level Maths and Further Maths with engineering applications.
 
 Specifically, this resource explores how sinusoids and parametric equations are used to describe Lissajous figures, and how these figures have applications in material surface heat treatments.
 
@@ -8,7 +8,7 @@ Specifically, this resource explores how sinusoids and parametric equations are 
 - LissajousSlides.pdf
     - Slideshow with an overview of Lissajous figures and activities to work through.
 - LissajousHints.pdf
-    - Hints, tips and possible solutions for the activities in LissajousSlides.pdf. (To-do)
+    - Hints, tips and possible solutions for the activities in LissajousSlides.pdf.
 - lissajous.py
     - An interactive app which plots Lissajous figures for user-defined parameters. Can also animate those plots.
 - lissajousPlot.py
@@ -17,6 +17,8 @@ Specifically, this resource explores how sinusoids and parametric equations are 
     - A simple script demonstrating how to plot a Lissajous figure using Python.
 - gaussPow.py
     - A script for determining the energy distribution of a laser surface heat scanner.
+- gaussPlot.py
+    - A script for plotting the surface of a 2D Gaussian distribution.
 
 ### Using the Python scripts
 
