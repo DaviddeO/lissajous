@@ -32,8 +32,13 @@ t = np.arange(0, 2 * np.pi, dt)
 # Calculate the Lissajous figure
 tx = np.sin(t)
 ty = np.sin(t + np.pi / 2)
+# (tx and ty should have the same dimensions as t)
 
 # Run the numerical integration to find the energy distribution
+# First calculate the power distribution at a particular point (x,y)
+# Then calculate the energy transferred at that point
+# by integrating with respect to t
+# The energy distribution is given by repeating this procedure for all (x,y)
 for i in range(len(x)):
     expX = (x[i] - tx)**2 / sigma2X
     for j in range(len(y)):
