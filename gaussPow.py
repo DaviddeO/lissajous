@@ -6,10 +6,10 @@ of a laser scanner. In this example the distribution is a 2D Gaussian:
 
          p(x,y,t) = exp(-0.5( ((x - tx)^2)/sx + ((y - ty)^2)/sy )),
 
-where tx and ty are the parametric equations for the Lissajous figure,
-and sx and sy are widths of the laser spot in the x an y directions.
-To find the energy distribution as a function of position (x,y), the above
-power distribution must be integrated with respect to t.
+where tx and ty are the parametric equations for the Lissajous figure
+(i.e. tx(t) and ty(t)), and sx and sy are widths of the laser spot in the x
+an y directions. To find the energy distribution as a function of position
+(x,y), the above power distribution must be integrated with respect to t.
 """
 
 import numpy as np
